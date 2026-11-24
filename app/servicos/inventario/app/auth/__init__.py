@@ -1,0 +1,1 @@
+"""Autenticação e autorização no microsserviço de inventário."""
