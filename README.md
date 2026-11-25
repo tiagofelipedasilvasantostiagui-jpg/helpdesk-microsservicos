@@ -1,19 +1,21 @@
-# HelpDesk TI — Arquitetura de Microsserviços
+# HelpDesk TI | Plataforma de Atendimento com Microsserviços
 
-Sistema de chamados de TI desenvolvido em **Python, FastAPI e Docker**, refatorado de uma arquitetura monolítica para microsserviços independentes.
+**Vídeo de apresentação:** https://youtu.be/35tDwWoX4QQ
 
-Projeto desenvolvido para a disciplina de **Arquitetura de Software**, sob orientação do Prof. Filipe Cavalcante.
+O **HelpDesk TI** é uma aplicação de gerenciamento de solicitações de suporte técnico, construída com **Python, FastAPI e Docker**. O projeto foi reorganizado a partir de uma estrutura monolítica para uma solução baseada em microsserviços, permitindo que cada parte do sistema funcione de maneira independente.
 
-## Arquitetura
+Desenvolvido para a disciplina de **Arquitetura de Software**, com orientação do professor Filipe Cavalcante.
 
-O sistema possui três microsserviços independentes e um API Gateway, responsável por centralizar o acesso da aplicação.
+## Visão geral da arquitetura
 
-- **Usuários:** autenticação, login, usuários e tokens JWT.
-- **Inventário:** cadastro e consulta de equipamentos.
-- **Chamados:** abertura, atribuição, atualização de status, comentários, SLA e notificações.
-- **API Gateway:** ponto único de entrada, encaminhamento das requisições e verificação da saúde dos serviços.
+A aplicação é composta por três serviços principais e um **API Gateway**, que recebe as requisições da interface e direciona cada chamada ao serviço responsável.
 
-### Diagrama da arquitetura
+- **Serviço de Usuários:** gerencia contas, autenticação, login e emissão de tokens JWT.
+- **Serviço de Inventário:** realiza o registro e a consulta dos equipamentos.
+- **Serviço de Chamados:** cuida da criação e atribuição de chamados, mudanças de status, comentários, SLA e notificações.
+- **API Gateway:** centraliza a entrada da aplicação, encaminha as requisições e verifica a disponibilidade dos serviços.
+
+### Representação da arquitetura
 
 ```mermaid
 flowchart TB
@@ -31,20 +33,24 @@ flowchart TB
     Chamados -->|HTTP + JWT| Inventario
 ```
 
-Cada microsserviço possui sua própria aplicação, banco de dados e configuração. A comunicação entre Chamados, Usuários e Inventário ocorre por HTTP, com encaminhamento do token JWT e tratamento de falhas.
+Os serviços mantêm aplicações, configurações e bancos de dados próprios. Quando o serviço de Chamados precisa consultar informações de Usuários ou do Inventário, a integração acontece por HTTP. O token JWT também é encaminhado nessas chamadas, e situações de falha são tratadas pela aplicação.
 
-## Tecnologias utilizadas
+## Tecnologias e ferramentas
 
-- Python 3.12
-- FastAPI
-- SQLAlchemy
-- SQLite
-- Docker e Docker Compose
-- HTTPX
-- JWT
-- HTML, CSS e JavaScript
+| Tecnologia | Utilização |
+|---|---|
+| Python 3.12 | Linguagem principal |
+| FastAPI | Construção das APIs |
+| SQLAlchemy | Integração com os bancos de dados |
+| SQLite | Armazenamento dos dados |
+| Docker e Docker Compose | Containerização e execução dos serviços |
+| HTTPX | Comunicação HTTP entre serviços |
+| JWT | Autenticação por tokens |
+| HTML, CSS e JavaScript | Interface web |
 
-## Estrutura do projeto
+## Organização dos arquivos
+
+A estrutura principal do repositório está distribuída da seguinte maneira:
 
 ```text
 app/
@@ -79,69 +85,79 @@ docker-compose.yml
 README.md
 ```
 
-## Como executar
+## Instalação e execução
 
-### 1. Requisitos
+### Pré-requisitos
 
-- Docker instalado.
-- Docker Compose disponível.
-- Git, caso queira clonar o repositório.
+Antes de iniciar, confira se o ambiente possui:
 
-### 2. Configuração
+- Docker instalado;
+- Docker Compose disponível;
+- Git, caso vá clonar o repositório.
 
-Copie o arquivo de exemplo:
+### Preparar as variáveis de ambiente
+
+Na pasta principal do projeto, crie o arquivo `.env` a partir do modelo disponibilizado:
 
 ```bash
 cp .env.example .env
 ```
 
-Configure no `.env` uma chave `JWT_SEGREDO` com pelo menos 32 caracteres.
+Depois, abra o `.env` e defina a variável `JWT_SEGREDO` com uma chave de, no mínimo, 32 caracteres.
 
-Não compartilhe o arquivo `.env` nem envie suas chaves para o GitHub.
+> **Atenção:** não publique o arquivo `.env` nem exponha suas chaves ou credenciais no GitHub.
 
-### 3. Iniciar o sistema
+### Subir a aplicação
 
-Na pasta raiz do projeto, execute:
+Com o terminal aberto na raiz do projeto, execute:
 
 ```bash
 docker compose up --build -d
 ```
 
-Para verificar os containers:
+O comando constrói as imagens necessárias e inicia os containers em segundo plano.
+
+### Comandos úteis
+
+Consultar os containers em execução:
 
 ```bash
 docker compose ps
 ```
 
-Para acompanhar os registros:
+Visualizar os logs dos serviços:
 
 ```bash
 docker compose logs -f
 ```
 
-Para encerrar:
+Parar e remover os containers:
 
 ```bash
 docker compose down
 ```
 
-Os dados ficam armazenados em volumes independentes do Docker.
+Os dados são mantidos em volumes Docker separados, de acordo com cada serviço.
 
-## Acesso ao sistema
+## Endereços de acesso
 
-- **Aplicação:** http://localhost:8000
-- **Documentação do Gateway:** http://localhost:8000/docs
-- **Saúde dos serviços:** http://localhost:8000/saude
+Depois que os containers iniciarem, utilize:
 
-A porta 8000 é a única porta publicada para acesso externo. Os microsserviços e bancos de dados permanecem na rede interna do Docker.
+| Recurso | Endereço |
+|---|---|
+| Interface da aplicação | http://localhost:8000 |
+| Documentação da API Gateway | http://localhost:8000/docs |
+| Verificação de saúde dos serviços | http://localhost:8000/saude |
 
-## Contas de demonstração
+Somente a porta **8000** fica publicada para acesso externo. Os microsserviços e seus bancos de dados se comunicam pela rede interna criada pelo Docker.
 
-As contas de demonstração são criadas quando o serviço de Usuários inicia com `DADOS_EXEMPLO=1` e o banco está vazio.
+## Usuários para demonstração
 
-Senha padrão: `Helpdesk2026`
+Quando o serviço de Usuários é iniciado com `DADOS_EXEMPLO=1` e o banco ainda não contém registros, o sistema cria contas de exemplo.
 
-| E-mail | Perfil |
+**Senha utilizada nas contas:** `Helpdesk2026`
+
+| E-mail | Tipo de acesso |
 |---|---|
 | admin@empresa.com | Administrador |
 | carla@empresa.com | Técnica |
@@ -149,52 +165,52 @@ Senha padrão: `Helpdesk2026`
 | ana@empresa.com | Solicitante |
 | bruno@empresa.com | Solicitante |
 
-Essas contas são destinadas exclusivamente a testes e demonstrações acadêmicas.
+Esses acessos são fornecidos para fins de teste e apresentação acadêmica.
 
-## Segurança
+## Recursos de segurança
 
-O sistema utiliza:
+A aplicação adota mecanismos para controlar o acesso e proteger a comunicação entre os componentes:
 
-- Autenticação por e-mail e senha.
-- Tokens JWT para autenticação das requisições.
-- Verificação de autenticação nos serviços.
-- Controle de permissões por perfil.
-- Isolamento dos chamados por solicitante.
-- Encaminhamento do token nas chamadas entre microsserviços.
-- Timeout e tratamento de indisponibilidade com HTTP 503.
-- Containers com restrições de privilégios.
-- Bancos de dados separados por serviço.
+- Login utilizando e-mail e senha;
+- Autenticação das requisições por tokens JWT;
+- Validação de autenticação nos microsserviços;
+- Permissões definidas conforme o perfil do usuário;
+- Restrição de visualização dos chamados ao respectivo solicitante;
+- Reenvio do token JWT nas integrações entre serviços;
+- Definição de timeout e resposta HTTP 503 em caso de indisponibilidade;
+- Containers executados com restrições de privilégios;
+- Separação dos bancos de dados por microsserviço.
 
-## Testes realizados
+## Verificações e testes
 
-Durante a execução do projeto, foram realizados os seguintes testes:
+Foram executados testes para conferir a inicialização, a comunicação entre os componentes, as regras de acesso e o comportamento do sistema diante da indisponibilidade de um serviço.
 
-| Teste | Resultado |
+| Cenário verificado | Resultado |
 |---|---|
-| Inicialização dos serviços com Docker Compose | Aprovado |
-| Saúde dos três microsserviços pelo Gateway | HTTP 200 |
-| Login pelo Gateway | HTTP 200 |
-| Acesso autenticado aos chamados | HTTP 200 |
-| Acesso sem token | HTTP 401 |
-| Solicitante tentando acessar chamado de outro solicitante | HTTP 404 |
-| Usuários funcionando com Inventário desligado | Aprovado |
-| Chamados funcionando com Inventário desligado | Aprovado |
-| Abertura de chamado com ativo enquanto Inventário estava desligado | HTTP 503 |
-| Recuperação do Inventário após reinicialização | Aprovado |
+| Subida dos serviços usando Docker Compose | Aprovado |
+| Consulta da saúde dos três serviços pelo Gateway | HTTP 200 |
+| Realização de login pelo Gateway | HTTP 200 |
+| Consulta autenticada aos chamados | HTTP 200 |
+| Tentativa de acesso sem token | HTTP 401 |
+| Solicitante tentando consultar chamado de outra pessoa | HTTP 404 |
+| Serviço de Usuários operando com Inventário desligado | Aprovado |
+| Serviço de Chamados operando com Inventário desligado | Aprovado |
+| Abertura de chamado vinculado a um equipamento com Inventário indisponível | HTTP 503 |
+| Retorno do Inventário após reiniciar o serviço | Aprovado |
 
-## Decisões arquiteturais
+## Principais escolhas de arquitetura
 
-1. **Separação por responsabilidade:** cada microsserviço possui uma função específica.
-2. **Banco de dados independente:** cada serviço possui seu próprio banco e volume.
-3. **Comunicação por HTTP:** Chamados consulta Usuários e Inventário por requisições HTTP.
-4. **API Gateway:** centraliza o acesso da interface e encaminha as requisições para os serviços.
-5. **Resiliência:** chamadas entre serviços possuem timeout e tratamento de indisponibilidade.
-6. **Notificações:** implementadas dentro do microsserviço Chamados, utilizando seu próprio banco de dados.
+1. **Responsabilidades separadas:** cada microsserviço atende a uma parte específica do sistema.
+2. **Persistência independente:** Usuários, Inventário e Chamados possuem bancos e volumes próprios.
+3. **Integração via HTTP:** o serviço de Chamados consulta os serviços de Usuários e Inventário por requisições HTTP.
+4. **Gateway como entrada central:** a interface acessa a aplicação pelo Gateway, que encaminha as chamadas aos destinos corretos.
+5. **Tratamento de falhas:** as comunicações entre serviços utilizam timeout e respostas específicas para indisponibilidade.
+6. **Notificações no serviço de Chamados:** esse recurso permanece sob responsabilidade do próprio microsserviço e utiliza seu banco de dados.
 
-## Conclusão
+## Considerações finais
 
-A refatoração transformou o HelpDesk TI de uma aplicação monolítica em uma arquitetura com três microsserviços independentes e um API Gateway.
+O desenvolvimento do HelpDesk TI demonstra a migração de uma aplicação monolítica para uma estrutura composta por três microsserviços independentes, integrados por um API Gateway.
 
-A solução permite executar, monitorar e reiniciar os serviços separadamente, mantendo a comunicação entre eles e aplicando autenticação, autorização e tratamento de falhas.
+Com essa organização, é possível iniciar, acompanhar e reiniciar cada serviço separadamente, sem deixar de manter a integração entre eles. A solução também aplica autenticação, controle de permissões e mecanismos para lidar com falhas de comunicação.
 
-O projeto demonstra na prática os conceitos de independência, separação de responsabilidades, comunicação entre serviços e resiliência em uma arquitetura de microsserviços.
+Dessa forma, o projeto coloca em prática conceitos importantes de arquitetura de microsserviços, como divisão de responsabilidades, independência dos componentes, comunicação entre APIs e resiliência.
